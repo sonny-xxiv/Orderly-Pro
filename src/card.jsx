@@ -6,10 +6,28 @@ import Listheader from "./Listheader";
 
 const Card = () => {
   // const [count, setCount] = useState(0);
-  const [allTasks, setAllTasks] = useState([]);
+  const STORAGE_KEY = "tasks";
+  const [allTasks, setAllTasks] = useState(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const storedTasks = localStorage.getItem(STORAGE_KEY);
+      return storedTasks ? JSON.parse(storedTasks) : [];
+    } catch (error) {
+      console.error("Error reading tasks from localStorage:", error);
+      return [];
+    }
+  });
   const [task, setTask] = useState("");
   const pendingTasks = allTasks.filter((task) => !task.completed);
   const completedTasks = allTasks.filter((task) => task.completed);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(allTasks));
+    } catch (error) {
+      console.error("Error saving tasks to localStorage:", error);
+    }
+  }, [allTasks]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -29,10 +47,6 @@ const Card = () => {
 
     setAllTasks(updatedTasks);
   };
-
-  useEffect(() => {
-    console.log(allTasks);
-  }, [allTasks]);
 
   const handleDelete = (id) => {
     setAllTasks(allTasks.filter((task) => task.id !== id));
